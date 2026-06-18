@@ -8,6 +8,8 @@ export type SaveItemInput = {
   description: string;
   quantity: number;
   rrp: number;
+  finish: string | null;
+  code: string | null;
   image_url: string | null;
 };
 
@@ -128,6 +130,8 @@ export async function saveDisplay(
         description: item.description.trim(),
         quantity: item.quantity,
         rrp: item.rrp,
+        finish: item.finish?.trim() || null,
+        code: item.code?.trim() || null,
         image_url: item.image_url,
       };
 

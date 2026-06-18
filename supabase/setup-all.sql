@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS items (
   description TEXT NOT NULL,
   quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity >= 0),
   rrp NUMERIC(10, 2) NOT NULL CHECK (rrp >= 0),
-  image_url TEXT
+  image_url TEXT,
+  finish TEXT,
+  code TEXT
 );
 
 CREATE INDEX IF NOT EXISTS items_display_id_idx ON items(display_id);

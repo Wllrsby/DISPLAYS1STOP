@@ -19,6 +19,8 @@ export type Item = {
   quantity: number;
   rrp: number;
   image_url: string | null;
+  finish: string | null;
+  code: string | null;
 };
 
 export type SectionWithItems = Section & {
@@ -34,6 +36,8 @@ export type ItemFormData = {
   description: string;
   quantity: number;
   rrp: string;
+  finish: string;
+  code: string;
   image_url: string | null;
   imageFile?: File | null;
 };

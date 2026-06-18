@@ -15,6 +15,8 @@ import type {
 function emptyItem(): ItemFormData {
   return {
     description: "",
+    finish: "",
+    code: "",
     quantity: 1,
     rrp: "",
     image_url: null,
@@ -38,6 +40,8 @@ function mapDisplayToSections(display?: DisplayWithSections): SectionFormData[] 
         ? section.items.map((item) => ({
             id: item.id,
             description: item.description,
+            finish: item.finish ?? "",
+            code: item.code ?? "",
             quantity: item.quantity,
             rrp: item.rrp.toString(),
             image_url: item.image_url,
@@ -151,6 +155,8 @@ export function DisplayForm({ display }: DisplayFormProps) {
                 description: item.description,
                 quantity: item.quantity,
                 rrp: parseFloat(item.rrp) || 0,
+                finish: item.finish || null,
+                code: item.code || null,
                 image_url: imageUrl,
               };
             })

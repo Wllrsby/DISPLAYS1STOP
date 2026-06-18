@@ -62,6 +62,32 @@ export function ItemRow({
 
       <div className="col-span-6 md:col-span-2">
         <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
+          Finish
+        </label>
+        <input
+          type="text"
+          value={item.finish}
+          onChange={(e) => onChange(index, { finish: e.target.value })}
+          placeholder="e.g. Matt White"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+        />
+      </div>
+
+      <div className="col-span-6 md:col-span-2">
+        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
+          Code
+        </label>
+        <input
+          type="text"
+          value={item.code}
+          onChange={(e) => onChange(index, { code: e.target.value })}
+          placeholder="Product code"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+        />
+      </div>
+
+      <div className="col-span-6 md:col-span-2">
+        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
           Quantity
         </label>
         <input

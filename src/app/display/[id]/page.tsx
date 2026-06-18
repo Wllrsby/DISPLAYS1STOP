@@ -147,6 +147,26 @@ export default async function DisplayPage({ params }: Props) {
                           <h3 className="font-medium text-slate-900">
                             {item.description}
                           </h3>
+                          {(item.finish || item.code) && (
+                            <dl className="mt-2 space-y-1 text-sm">
+                              {item.finish && (
+                                <div className="flex gap-2">
+                                  <dt className="text-slate-500">Finish</dt>
+                                  <dd className="font-medium text-slate-900">
+                                    {item.finish}
+                                  </dd>
+                                </div>
+                              )}
+                              {item.code && (
+                                <div className="flex gap-2">
+                                  <dt className="text-slate-500">Code</dt>
+                                  <dd className="font-medium text-slate-900">
+                                    {item.code}
+                                  </dd>
+                                </div>
+                              )}
+                            </dl>
+                          )}
                           <dl className="mt-3 flex items-center justify-between text-sm">
                             <div>
                               <dt className="text-slate-500">Qty</dt>
