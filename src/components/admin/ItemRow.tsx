@@ -12,6 +12,12 @@ type ItemRowProps = {
   canRemove: boolean;
 };
 
+const fieldClass =
+  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20";
+
+const labelClass =
+  "mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500";
+
 function imageFromClipboard(event: React.ClipboardEvent): File | null {
   for (const entry of event.clipboardData.items) {
     if (entry.type.startsWith("image/")) {
@@ -29,7 +35,6 @@ export function ItemRow({
   canRemove,
 }: ItemRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pasteRef = useRef<HTMLDivElement>(null);
   const previewUrl =
     item.imageFile ? URL.createObjectURL(item.imageFile) : item.image_url;
 
@@ -40,129 +45,28 @@ export function ItemRow({
   function handlePaste(event: React.ClipboardEvent) {
     const file = imageFromClipboard(event);
     if (!file) return;
-
     event.preventDefault();
     setImageFile(file);
   }
 
   return (
-    <div className="grid grid-cols-12 gap-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
-      <div className="col-span-12 md:col-span-4">
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
-          Description
-        </label>
-        <input
-          type="text"
-          value={item.description}
-          onChange={(e) => onChange(index, { description: e.target.value })}
-          placeholder="Product description"
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
-        />
-      </div>
-
-      <div className="col-span-6 md:col-span-2">
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
-          Finish
-        </label>
-        <input
-          type="text"
-          value={item.finish}
-          onChange={(e) => onChange(index, { finish: e.target.value })}
-          placeholder="e.g. Matt White"
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
-        />
-      </div>
-
-      <div className="col-span-6 md:col-span-2">
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
-          Code
-        </label>
-        <input
-          type="text"
-          value={item.code}
-          onChange={(e) => onChange(index, { code: e.target.value })}
-          placeholder="Product code"
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
-        />
-      </div>
-
-      <div className="col-span-6 md:col-span-2">
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
-          Quantity
-        </label>
-        <input
-          type="number"
-          min={0}
-          value={item.quantity}
-          onChange={(e) =>
-            onChange(index, { quantity: parseInt(e.target.value) || 0 })
-          }
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
-        />
-      </div>
-
-      <div className="col-span-6 md:col-span-2">
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
-          RRP (£)
-        </label>
-        <input
-          type="number"
-          min={0}
-          step="0.01"
-          value={item.rrp}
-          onChange={(e) => onChange(index, { rrp: e.target.value })}
-          placeholder="0.00"
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
-        />
-      </div>
-
-      <div className="col-span-10 md:col-span-3">
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
-          Image
-        </label>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            setImageFile(e.target.files?.[0] ?? null);
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white px-3 text-sm text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
-        >
-          {previewUrl ? "Change image" : "Upload image"}
-        </button>
-        <div
-          ref={pasteRef}
-          tabIndex={0}
-          onPaste={handlePaste}
-          className="mt-2 flex h-[38px] w-full cursor-text items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-3 text-sm text-slate-500 transition hover:border-slate-400 hover:bg-slate-50 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
-        >
-          Click here &amp; paste image (Ctrl+V)
+    <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <label className={labelClass}>Description</label>
+          <input
+            type="text"
+            value={item.description}
+            onChange={(e) => onChange(index, { description: e.target.value })}
+            placeholder="Product description"
+            className={fieldClass}
+          />
         </div>
-        {previewUrl && (
-          <div className="relative mt-2 h-16 w-16 overflow-hidden rounded-md border border-slate-200">
-            <Image
-              src={previewUrl}
-              alt="Preview"
-              fill
-              className="object-contain"
-              unoptimized
-            />
-          </div>
-        )}
-      </div>
-
-      <div className="col-span-2 flex items-end justify-end md:col-span-1">
         <button
           type="button"
           onClick={() => onRemove(index)}
           disabled={!canRemove}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
+          className="mt-6 rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
           title="Remove item"
         >
           <svg
@@ -178,6 +82,93 @@ export function ItemRow({
             />
           </svg>
         </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div>
+          <label className={labelClass}>Finish</label>
+          <input
+            type="text"
+            value={item.finish ?? ""}
+            onChange={(e) => onChange(index, { finish: e.target.value })}
+            placeholder="e.g. Matt White"
+            className={fieldClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Code</label>
+          <input
+            type="text"
+            value={item.code ?? ""}
+            onChange={(e) => onChange(index, { code: e.target.value })}
+            placeholder="Product code"
+            className={fieldClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Quantity</label>
+          <input
+            type="number"
+            min={0}
+            value={item.quantity}
+            onChange={(e) =>
+              onChange(index, { quantity: parseInt(e.target.value) || 0 })
+            }
+            className={fieldClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>RRP (£)</label>
+          <input
+            type="number"
+            min={0}
+            step="0.01"
+            value={item.rrp}
+            onChange={(e) => onChange(index, { rrp: e.target.value })}
+            placeholder="0.00"
+            className={fieldClass}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>Image</label>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+        />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+          <div className="flex flex-1 flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex h-[38px] w-full items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-3 text-sm text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              {previewUrl ? "Change image" : "Upload image"}
+            </button>
+            <div
+              tabIndex={0}
+              onPaste={handlePaste}
+              className="flex h-[38px] w-full cursor-text items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-3 text-sm text-slate-500 transition hover:border-slate-400 hover:bg-slate-50 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+            >
+              Click here &amp; paste image (Ctrl+V)
+            </div>
+          </div>
+          {previewUrl && (
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-white">
+              <Image
+                src={previewUrl}
+                alt="Preview"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
