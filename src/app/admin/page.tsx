@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DisplayList } from "@/components/admin/DisplayList";
+import { ConfigError } from "@/components/ConfigError";
 import { createServerClient } from "@/lib/supabase/server";
 import type { Display } from "@/lib/types";
 
@@ -10,11 +11,25 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
-  const supabase = createServerClient();
-  const { data: displays } = await supabase
-    .from("displays")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let displays: Display[] = [];
+
+  try {
+    const supabase = createServerClient();
+    const { data, error } = await supabase
+      .from("displays")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return <ConfigError message={error.message} />;
+    }
+
+    displays = (data as Display[]) ?? [];
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to connect to Supabase";
+    return <ConfigError message={message} />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -38,7 +53,7 @@ export default async function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
-        <DisplayList displays={(displays as Display[]) ?? []} />
+        <DisplayList displays={displays} />
       </main>
     </div>
   );
