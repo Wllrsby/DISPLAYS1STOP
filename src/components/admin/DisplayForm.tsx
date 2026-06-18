@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { saveDisplay } from "@/app/admin/actions";
-import { uploadItemImage } from "@/app/admin/upload";
+import { saveDisplay, uploadItemImage } from "@/app/admin/actions";
 import { ItemRow } from "@/components/admin/ItemRow";
 import { QRCodeDisplay } from "@/components/admin/QRCodeDisplay";
 import type { DisplayWithItems, ItemFormData } from "@/lib/types";

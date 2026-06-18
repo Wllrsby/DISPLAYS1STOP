@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { DisplayForm } from "@/components/admin/DisplayForm";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "New Display – Admin",
 };
