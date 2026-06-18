@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { saveDisplay } from "@/app/admin/actions";
+import { uploadItemImage } from "@/app/admin/upload";
 import { ItemRow } from "@/components/admin/ItemRow";
 import { QRCodeDisplay } from "@/components/admin/QRCodeDisplay";
-import { uploadItemImage } from "@/lib/upload";
 import type { DisplayWithItems, ItemFormData } from "@/lib/types";
 
 function emptyItem(): ItemFormData {
@@ -67,7 +67,13 @@ export function DisplayForm({ display }: DisplayFormProps) {
         items.map(async (item) => {
           let imageUrl = item.image_url;
           if (item.imageFile) {
-            imageUrl = await uploadItemImage(item.imageFile);
+            const formData = new FormData();
+            formData.append("file", item.imageFile);
+            const upload = await uploadItemImage(formData);
+            if ("error" in upload) {
+              throw new Error(upload.error);
+            }
+            imageUrl = upload.url;
           }
           return {
             id: item.id,
