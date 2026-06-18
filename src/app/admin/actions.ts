@@ -11,10 +11,16 @@ export type SaveItemInput = {
   image_url: string | null;
 };
 
+export type SaveSectionInput = {
+  id?: string;
+  name: string;
+  items: SaveItemInput[];
+};
+
 export async function saveDisplay(
   displayId: string | null,
   name: string,
-  items: SaveItemInput[]
+  sections: SaveSectionInput[]
 ) {
   const supabase = createServerClient();
 
@@ -22,9 +28,23 @@ export async function saveDisplay(
     return { error: "Display name is required" };
   }
 
-  const validItems = items.filter((item) => item.description.trim());
-  if (validItems.length === 0) {
+  const validSections = sections
+    .map((section) => ({
+      ...section,
+      name: section.name.trim(),
+      items: section.items.filter((item) => item.description.trim()),
+    }))
+    .filter((section) => section.name || section.items.length > 0);
+
+  const totalItems = validSections.reduce((n, s) => n + s.items.length, 0);
+  if (totalItems === 0) {
     return { error: "Add at least one item with a description" };
+  }
+
+  for (const section of validSections) {
+    if (!section.name) {
+      return { error: "Each section needs a name" };
+    }
   }
 
   let id = displayId;
@@ -47,37 +67,80 @@ export async function saveDisplay(
     id = data.id;
   }
 
+  const { data: existingSections } = await supabase
+    .from("sections")
+    .select("id")
+    .eq("display_id", id);
+
+  const existingSectionIds = new Set(existingSections?.map((s) => s.id) ?? []);
+  const keptSectionIds = new Set(
+    validSections.filter((s) => s.id).map((s) => s.id!)
+  );
+
+  const sectionsToDelete = [...existingSectionIds].filter(
+    (sectionId) => !keptSectionIds.has(sectionId)
+  );
+  if (sectionsToDelete.length > 0) {
+    await supabase.from("sections").delete().in("id", sectionsToDelete);
+  }
+
   const { data: existingItems } = await supabase
     .from("items")
     .select("id")
     .eq("display_id", id);
 
-  const existingIds = new Set(existingItems?.map((i) => i.id) ?? []);
-  const keptIds = new Set(validItems.filter((i) => i.id).map((i) => i.id!));
+  const existingItemIds = new Set(existingItems?.map((i) => i.id) ?? []);
+  const keptItemIds = new Set(
+    validSections.flatMap((s) => s.items.filter((i) => i.id).map((i) => i.id!))
+  );
 
-  const toDelete = [...existingIds].filter((itemId) => !keptIds.has(itemId));
-  if (toDelete.length > 0) {
-    await supabase.from("items").delete().in("id", toDelete);
+  const itemsToDelete = [...existingItemIds].filter(
+    (itemId) => !keptItemIds.has(itemId)
+  );
+  if (itemsToDelete.length > 0) {
+    await supabase.from("items").delete().in("id", itemsToDelete);
   }
 
-  for (const item of validItems) {
-    const payload = {
-      display_id: id,
-      description: item.description.trim(),
-      quantity: item.quantity,
-      rrp: item.rrp,
-      image_url: item.image_url,
-    };
+  for (let i = 0; i < validSections.length; i++) {
+    const section = validSections[i];
+    let sectionId = section.id;
 
-    if (item.id && existingIds.has(item.id)) {
+    if (sectionId && existingSectionIds.has(sectionId)) {
       const { error } = await supabase
-        .from("items")
-        .update(payload)
-        .eq("id", item.id);
+        .from("sections")
+        .update({ name: section.name, sort_order: i })
+        .eq("id", sectionId);
       if (error) return { error: error.message };
     } else {
-      const { error } = await supabase.from("items").insert(payload);
+      const { data, error } = await supabase
+        .from("sections")
+        .insert({ display_id: id, name: section.name, sort_order: i })
+        .select("id")
+        .single();
       if (error) return { error: error.message };
+      sectionId = data.id;
+    }
+
+    for (const item of section.items) {
+      const payload = {
+        display_id: id,
+        section_id: sectionId,
+        description: item.description.trim(),
+        quantity: item.quantity,
+        rrp: item.rrp,
+        image_url: item.image_url,
+      };
+
+      if (item.id && existingItemIds.has(item.id)) {
+        const { error } = await supabase
+          .from("items")
+          .update(payload)
+          .eq("id", item.id);
+        if (error) return { error: error.message };
+      } else {
+        const { error } = await supabase.from("items").insert(payload);
+        if (error) return { error: error.message };
+      }
     }
   }
 

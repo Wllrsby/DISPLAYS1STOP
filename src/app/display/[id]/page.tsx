@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
-import type { Item } from "@/lib/types";
+import type { Item, Section } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -42,13 +42,47 @@ export default async function DisplayPage({ params }: Props) {
 
   if (!display) notFound();
 
+  const { data: sections } = await supabase
+    .from("sections")
+    .select("*")
+    .eq("display_id", id)
+    .order("sort_order");
+
   const { data: items } = await supabase
     .from("items")
     .select("*")
     .eq("display_id", id);
 
+  const itemsBySection = new Map<string, Item[]>();
+  for (const item of (items as Item[]) ?? []) {
+    if (!item.section_id) continue;
+    const list = itemsBySection.get(item.section_id) ?? [];
+    list.push(item);
+    itemsBySection.set(item.section_id, list);
+  }
+
+  let displaySections =
+    (sections as Section[] | null)?.map((section) => ({
+      ...section,
+      items: itemsBySection.get(section.id) ?? [],
+    })) ?? [];
+
+  if (!displaySections.length && items?.length) {
+    displaySections = [
+      {
+        id: "legacy",
+        display_id: id,
+        name: "Products",
+        sort_order: 0,
+        items: items as Item[],
+      },
+    ];
+  }
+
+  const hasContent = displaySections.some((s) => s.items.length > 0);
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col bg-white">
       <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-900 sm:px-6">
         All prices are RRP and subject to discount. Please ask a member of
         staff.
@@ -63,66 +97,78 @@ export default async function DisplayPage({ params }: Props) {
         </p>
       </header>
 
-      <main className="mx-auto max-w-lg px-4 py-6 sm:max-w-2xl sm:px-6">
-        {!items?.length ? (
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
+        {!hasContent ? (
           <p className="text-center text-slate-500">No items in this display.</p>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2">
-            {(items as Item[]).map((item) => (
-              <li
-                key={item.id}
-                className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
-              >
-                <div className="relative aspect-square bg-slate-100">
-                  {item.image_url ? (
-                    <Image
-                      src={item.image_url}
-                      alt={item.description}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-slate-400">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-12 w-12"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <h2 className="font-medium text-slate-900">
-                    {item.description}
+          <div className="space-y-10">
+            {displaySections.map((section) =>
+              section.items.length > 0 ? (
+                <section key={section.id}>
+                  <h2 className="mb-4 border-b border-slate-200 pb-2 text-lg font-semibold text-slate-900">
+                    {section.name}
                   </h2>
-                  <dl className="mt-3 flex items-center justify-between text-sm">
-                    <div>
-                      <dt className="text-slate-500">Qty</dt>
-                      <dd className="font-medium text-slate-900">
-                        {item.quantity}
-                      </dd>
-                    </div>
-                    <div className="text-right">
-                      <dt className="text-slate-500">RRP</dt>
-                      <dd className="text-lg font-semibold text-slate-900">
-                        {formatPrice(Number(item.rrp))}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </li>
-            ))}
-          </ul>
+                  <ul className="space-y-6">
+                    {section.items.map((item) => (
+                      <li
+                        key={item.id}
+                        className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+                      >
+                        <div className="flex h-[min(50vh,320px)] w-full items-center justify-center bg-slate-50 p-2">
+                          {item.image_url ? (
+                            <Image
+                              src={item.image_url}
+                              alt={item.description}
+                              width={800}
+                              height={800}
+                              className="max-h-full max-w-full object-contain"
+                              sizes="100vw"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-400">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-12 w-12"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-medium text-slate-900">
+                            {item.description}
+                          </h3>
+                          <dl className="mt-3 flex items-center justify-between text-sm">
+                            <div>
+                              <dt className="text-slate-500">Qty</dt>
+                              <dd className="font-medium text-slate-900">
+                                {item.quantity}
+                              </dd>
+                            </div>
+                            <div className="text-right">
+                              <dt className="text-slate-500">RRP</dt>
+                              <dd className="text-lg font-semibold text-slate-900">
+                                {formatPrice(Number(item.rrp))}
+                              </dd>
+                            </div>
+                          </dl>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : null
+            )}
+          </div>
         )}
       </main>
     </div>

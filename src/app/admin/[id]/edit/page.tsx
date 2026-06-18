@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DisplayForm } from "@/components/admin/DisplayForm";
 import { createServerClient } from "@/lib/supabase/server";
-import type { DisplayWithItems } from "@/lib/types";
+import type { DisplayWithSections, Item, Section } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -36,14 +36,46 @@ export default async function EditDisplayPage({ params }: Props) {
 
   if (!display) notFound();
 
+  const { data: sections } = await supabase
+    .from("sections")
+    .select("*")
+    .eq("display_id", id)
+    .order("sort_order");
+
   const { data: items } = await supabase
     .from("items")
     .select("*")
     .eq("display_id", id);
 
-  const displayWithItems: DisplayWithItems = {
+  const itemsBySection = new Map<string, Item[]>();
+  for (const item of (items as Item[]) ?? []) {
+    if (!item.section_id) continue;
+    const list = itemsBySection.get(item.section_id) ?? [];
+    list.push(item);
+    itemsBySection.set(item.section_id, list);
+  }
+
+  let displaySections =
+    (sections as Section[] | null)?.map((section) => ({
+      ...section,
+      items: itemsBySection.get(section.id) ?? [],
+    })) ?? [];
+
+  if (!displaySections.length && items?.length) {
+    displaySections = [
+      {
+        id: "legacy",
+        display_id: id,
+        name: "Main",
+        sort_order: 0,
+        items: items as Item[],
+      },
+    ];
+  }
+
+  const displayWithSections: DisplayWithSections = {
     ...display,
-    items: items ?? [],
+    sections: displaySections,
   };
 
   return (
@@ -76,7 +108,7 @@ export default async function EditDisplayPage({ params }: Props) {
 
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="rounded-xl border border-slate-200 bg-white p-8">
-          <DisplayForm display={displayWithItems} />
+          <DisplayForm display={displayWithSections} />
         </div>
       </main>
     </div>

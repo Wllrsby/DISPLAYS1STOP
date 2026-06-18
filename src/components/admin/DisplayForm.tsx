@@ -4,9 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { saveDisplay, uploadItemImage } from "@/app/admin/actions";
-import { ItemRow } from "@/components/admin/ItemRow";
 import { QRCodeDisplay } from "@/components/admin/QRCodeDisplay";
-import type { DisplayWithItems, ItemFormData } from "@/lib/types";
+import { SectionBlock } from "@/components/admin/SectionBlock";
+import type {
+  DisplayWithSections,
+  ItemFormData,
+  SectionFormData,
+} from "@/lib/types";
 
 function emptyItem(): ItemFormData {
   return {
@@ -18,24 +22,42 @@ function emptyItem(): ItemFormData {
   };
 }
 
+function emptySection(): SectionFormData {
+  return {
+    name: "",
+    items: [emptyItem()],
+  };
+}
+
+function mapDisplayToSections(display?: DisplayWithSections): SectionFormData[] {
+  if (display?.sections.length) {
+    return display.sections.map((section) => ({
+      id: section.id,
+      name: section.name,
+      items: section.items.length
+        ? section.items.map((item) => ({
+            id: item.id,
+            description: item.description,
+            quantity: item.quantity,
+            rrp: item.rrp.toString(),
+            image_url: item.image_url,
+            imageFile: null,
+          }))
+        : [emptyItem()],
+    }));
+  }
+  return [emptySection()];
+}
+
 type DisplayFormProps = {
-  display?: DisplayWithItems;
+  display?: DisplayWithSections;
 };
 
 export function DisplayForm({ display }: DisplayFormProps) {
   const router = useRouter();
   const [name, setName] = useState(display?.name ?? "");
-  const [items, setItems] = useState<ItemFormData[]>(
-    display?.items.length
-      ? display.items.map((item) => ({
-          id: item.id,
-          description: item.description,
-          quantity: item.quantity,
-          rrp: item.rrp.toString(),
-          image_url: item.image_url,
-          imageFile: null,
-        }))
-      : [emptyItem()]
+  const [sections, setSections] = useState<SectionFormData[]>(
+    mapDisplayToSections(display)
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,18 +65,65 @@ export function DisplayForm({ display }: DisplayFormProps) {
 
   const qrDisplayId = display?.id ?? savedId;
 
-  function updateItem(index: number, updates: Partial<ItemFormData>) {
-    setItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, ...updates } : item))
+  function updateSection(
+    sectionIndex: number,
+    updates: Partial<SectionFormData>
+  ) {
+    setSections((prev) =>
+      prev.map((section, i) =>
+        i === sectionIndex ? { ...section, ...updates } : section
+      )
     );
   }
 
-  function addItem() {
-    setItems((prev) => [...prev, emptyItem()]);
+  function updateItem(
+    sectionIndex: number,
+    itemIndex: number,
+    updates: Partial<ItemFormData>
+  ) {
+    setSections((prev) =>
+      prev.map((section, i) =>
+        i === sectionIndex
+          ? {
+              ...section,
+              items: section.items.map((item, j) =>
+                j === itemIndex ? { ...item, ...updates } : item
+              ),
+            }
+          : section
+      )
+    );
   }
 
-  function removeItem(index: number) {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+  function addSection() {
+    setSections((prev) => [...prev, emptySection()]);
+  }
+
+  function removeSection(sectionIndex: number) {
+    setSections((prev) => prev.filter((_, i) => i !== sectionIndex));
+  }
+
+  function addItem(sectionIndex: number) {
+    setSections((prev) =>
+      prev.map((section, i) =>
+        i === sectionIndex
+          ? { ...section, items: [...section.items, emptyItem()] }
+          : section
+      )
+    );
+  }
+
+  function removeItem(sectionIndex: number, itemIndex: number) {
+    setSections((prev) =>
+      prev.map((section, i) =>
+        i === sectionIndex
+          ? {
+              ...section,
+              items: section.items.filter((_, j) => j !== itemIndex),
+            }
+          : section
+      )
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -63,24 +132,33 @@ export function DisplayForm({ display }: DisplayFormProps) {
     setError(null);
 
     try {
-      const preparedItems = await Promise.all(
-        items.map(async (item) => {
-          let imageUrl = item.image_url;
-          if (item.imageFile) {
-            const formData = new FormData();
-            formData.append("file", item.imageFile);
-            const upload = await uploadItemImage(formData);
-            if ("error" in upload) {
-              throw new Error(upload.error);
-            }
-            imageUrl = upload.url;
-          }
+      const preparedSections = await Promise.all(
+        sections.map(async (section) => {
+          const preparedItems = await Promise.all(
+            section.items.map(async (item) => {
+              let imageUrl = item.image_url;
+              if (item.imageFile) {
+                const formData = new FormData();
+                formData.append("file", item.imageFile);
+                const upload = await uploadItemImage(formData);
+                if ("error" in upload) {
+                  throw new Error(upload.error);
+                }
+                imageUrl = upload.url;
+              }
+              return {
+                id: item.id,
+                description: item.description,
+                quantity: item.quantity,
+                rrp: parseFloat(item.rrp) || 0,
+                image_url: imageUrl,
+              };
+            })
+          );
           return {
-            id: item.id,
-            description: item.description,
-            quantity: item.quantity,
-            rrp: parseFloat(item.rrp) || 0,
-            image_url: imageUrl,
+            id: section.id,
+            name: section.name,
+            items: preparedItems,
           };
         })
       );
@@ -88,7 +166,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
       const result = await saveDisplay(
         display?.id ?? savedId,
         name,
-        preparedItems
+        preparedSections
       );
 
       if (result.error) {
@@ -123,44 +201,42 @@ export function DisplayForm({ display }: DisplayFormProps) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Kitchen Showroom – Spring Collection"
+            placeholder="e.g. Front Window – Spring Collection"
             className="w-full max-w-xl rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
           />
         </div>
 
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-slate-700">Items</h2>
+            <h2 className="text-sm font-medium text-slate-700">Sections</h2>
             <button
               type="button"
-              onClick={addItem}
+              onClick={addSection}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Add Item
+              + Add section
             </button>
           </div>
 
-          <div className="space-y-3">
-            {items.map((item, index) => (
-              <ItemRow
-                key={item.id ?? `new-${index}`}
-                item={item}
-                index={index}
-                onChange={updateItem}
-                onRemove={removeItem}
-                canRemove={items.length > 1}
+          <div className="space-y-4">
+            {sections.map((section, sectionIndex) => (
+              <SectionBlock
+                key={section.id ?? `section-${sectionIndex}`}
+                sectionIndex={sectionIndex}
+                name={section.name}
+                items={section.items}
+                onNameChange={(sectionName) =>
+                  updateSection(sectionIndex, { name: sectionName })
+                }
+                onItemChange={(itemIndex, updates) =>
+                  updateItem(sectionIndex, itemIndex, updates)
+                }
+                onAddItem={() => addItem(sectionIndex)}
+                onRemoveItem={(itemIndex) =>
+                  removeItem(sectionIndex, itemIndex)
+                }
+                onRemoveSection={() => removeSection(sectionIndex)}
+                canRemoveSection={sections.length > 1}
               />
             ))}
           </div>

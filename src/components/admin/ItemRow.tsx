@@ -124,7 +124,7 @@ export function ItemRow({
               src={previewUrl}
               alt="Preview"
               fill
-              className="object-cover"
+              className="object-contain"
               unoptimized
             />
           </div>
