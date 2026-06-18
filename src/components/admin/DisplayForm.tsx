@@ -40,7 +40,8 @@ export function DisplayForm({ display }: DisplayFormProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(display?.id ?? null);
-  const [showQR, setShowQR] = useState(false);
+
+  const qrDisplayId = display?.id ?? savedId;
 
   function updateItem(index: number, updates: Partial<ItemFormData>) {
     setItems((prev) =>
@@ -96,7 +97,6 @@ export function DisplayForm({ display }: DisplayFormProps) {
       }
 
       setSavedId(result.id!);
-      setShowQR(true);
 
       if (!display?.id) {
         router.replace(`/admin/${result.id}/edit`);
@@ -189,9 +189,9 @@ export function DisplayForm({ display }: DisplayFormProps) {
         </div>
       </form>
 
-      {showQR && savedId && (
+      {qrDisplayId && (
         <div className="border-t border-slate-200 pt-8">
-          <QRCodeDisplay displayId={savedId} displayName={name} />
+          <QRCodeDisplay displayId={qrDisplayId} displayName={name} />
         </div>
       )}
     </div>

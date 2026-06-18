@@ -12,6 +12,15 @@ type ItemRowProps = {
   canRemove: boolean;
 };
 
+function imageFromClipboard(event: React.ClipboardEvent): File | null {
+  for (const entry of event.clipboardData.items) {
+    if (entry.type.startsWith("image/")) {
+      return entry.getAsFile();
+    }
+  }
+  return null;
+}
+
 export function ItemRow({
   item,
   index,
@@ -20,8 +29,21 @@ export function ItemRow({
   canRemove,
 }: ItemRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pasteRef = useRef<HTMLDivElement>(null);
   const previewUrl =
     item.imageFile ? URL.createObjectURL(item.imageFile) : item.image_url;
+
+  function setImageFile(file: File | null) {
+    onChange(index, { imageFile: file });
+  }
+
+  function handlePaste(event: React.ClipboardEvent) {
+    const file = imageFromClipboard(event);
+    if (!file) return;
+
+    event.preventDefault();
+    setImageFile(file);
+  }
 
   return (
     <div className="grid grid-cols-12 gap-4 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
@@ -78,8 +100,7 @@ export function ItemRow({
           accept="image/*"
           className="hidden"
           onChange={(e) => {
-            const file = e.target.files?.[0] ?? null;
-            onChange(index, { imageFile: file });
+            setImageFile(e.target.files?.[0] ?? null);
           }}
         />
         <button
@@ -89,6 +110,14 @@ export function ItemRow({
         >
           {previewUrl ? "Change image" : "Upload image"}
         </button>
+        <div
+          ref={pasteRef}
+          tabIndex={0}
+          onPaste={handlePaste}
+          className="mt-2 flex h-[38px] w-full cursor-text items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-3 text-sm text-slate-500 transition hover:border-slate-400 hover:bg-slate-50 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+        >
+          Click here &amp; paste image (Ctrl+V)
+        </div>
         {previewUrl && (
           <div className="relative mt-2 h-16 w-16 overflow-hidden rounded-md border border-slate-200">
             <Image
