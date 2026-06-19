@@ -18,6 +18,56 @@ function formatPrice(rrp: number) {
   }).format(rrp);
 }
 
+function itemLineTotal(item: Item) {
+  return Number(item.quantity) * Number(item.rrp);
+}
+
+function sectionTotal(items: Item[]) {
+  return items.reduce((sum, item) => sum + itemLineTotal(item), 0);
+}
+
+function ItemDetails({ item }: { item: Item }) {
+  const rrp = Number(item.rrp);
+  const lineTotal = itemLineTotal(item);
+
+  return (
+    <dl className="space-y-1 text-xs sm:text-sm">
+      {item.finish && (
+        <div className="flex gap-2">
+          <dt className="w-12 shrink-0 text-slate-400">Finish</dt>
+          <dd className="font-medium text-slate-900">{item.finish}</dd>
+        </div>
+      )}
+      {item.code && (
+        <div className="flex gap-2">
+          <dt className="w-12 shrink-0 text-slate-400">Code</dt>
+          <dd className="font-medium text-slate-900">{item.code}</dd>
+        </div>
+      )}
+      {item.size && (
+        <div className="flex gap-2">
+          <dt className="w-12 shrink-0 text-slate-400">Size</dt>
+          <dd className="font-medium text-slate-900">{item.size}</dd>
+        </div>
+      )}
+      <div className="flex gap-2">
+        <dt className="w-12 shrink-0 text-slate-400">Qty</dt>
+        <dd className="font-medium text-slate-900">{item.quantity}</dd>
+      </div>
+      <div className="flex gap-2">
+        <dt className="w-12 shrink-0 text-slate-400">RRP</dt>
+        <dd className="font-medium text-slate-900">{formatPrice(rrp)}</dd>
+      </div>
+      <div className="flex gap-2 border-t border-slate-100 pt-1.5">
+        <dt className="w-12 shrink-0 text-slate-400">Total</dt>
+        <dd className="font-semibold text-slate-900">
+          {item.quantity} × {formatPrice(rrp)} = {formatPrice(lineTotal)}
+        </dd>
+      </div>
+    </dl>
+  );
+}
+
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
   const supabase = createServerClient();
@@ -151,55 +201,11 @@ export default async function DisplayPage({ params }: Props) {
                           </div>
 
                           <div className="space-y-2 p-3 sm:space-y-3 sm:p-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <h3 className="text-sm font-medium leading-snug text-slate-900 sm:text-base">
-                                {item.description}
-                              </h3>
-                              <p className="shrink-0 text-sm font-semibold text-slate-900 sm:text-lg">
-                                {formatPrice(Number(item.rrp))}
-                              </p>
-                            </div>
+                            <h3 className="text-sm font-medium leading-snug text-slate-900 sm:text-base">
+                              {item.description}
+                            </h3>
 
-                            {(item.finish ||
-                              item.code ||
-                              item.size ||
-                              item.quantity > 0) && (
-                              <p className="text-xs leading-relaxed text-slate-600 sm:text-sm">
-                                {[
-                                  item.finish && (
-                                    <span key="finish">
-                                      <span className="text-slate-400">Finish</span>{" "}
-                                      {item.finish}
-                                    </span>
-                                  ),
-                                  item.code && (
-                                    <span key="code">
-                                      <span className="text-slate-400">Code</span>{" "}
-                                      {item.code}
-                                    </span>
-                                  ),
-                                  item.size && (
-                                    <span key="size">
-                                      <span className="text-slate-400">Size</span>{" "}
-                                      {item.size}
-                                    </span>
-                                  ),
-                                  <span key="qty">
-                                    <span className="text-slate-400">Qty</span>{" "}
-                                    {item.quantity}
-                                  </span>,
-                                ]
-                                  .filter(Boolean)
-                                  .map((part, partIndex, parts) => (
-                                    <span key={partIndex}>
-                                      {partIndex > 0 && (
-                                        <span className="text-slate-300"> · </span>
-                                      )}
-                                      {part}
-                                    </span>
-                                  ))}
-                              </p>
-                            )}
+                            <ItemDetails item={item} />
 
                             {swatches.length > 0 && (
                               <div>
@@ -239,6 +245,15 @@ export default async function DisplayPage({ params }: Props) {
                       );
                     })}
                   </ul>
+
+                  <div className="mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 sm:mt-4 sm:px-4 sm:py-3">
+                    <span className="text-sm font-medium text-slate-700">
+                      {section.name} total
+                    </span>
+                    <span className="text-base font-semibold text-slate-900">
+                      {formatPrice(sectionTotal(section.items))}
+                    </span>
+                  </div>
                 </section>
               ) : null
             )}
