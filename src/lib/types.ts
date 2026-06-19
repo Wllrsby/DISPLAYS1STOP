@@ -12,10 +12,12 @@ export type Section = {
 };
 
 export type ColorSwatch = {
+  name: string;
   image_url: string;
 };
 
 export type ColorSwatchFormData = {
+  name: string;
   image_url: string | null;
   imageFile?: File | null;
 };
@@ -35,13 +37,18 @@ export type Item = {
 
 export function parseColorSwatches(value: unknown): ColorSwatch[] {
   if (!Array.isArray(value)) return [];
-  return value.filter(
-    (entry): entry is ColorSwatch =>
-      typeof entry === "object" &&
-      entry !== null &&
-      typeof (entry as ColorSwatch).image_url === "string" &&
-      (entry as ColorSwatch).image_url.length > 0
-  );
+  return value
+    .filter(
+      (entry): entry is Record<string, unknown> =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof entry.image_url === "string" &&
+        entry.image_url.length > 0
+    )
+    .map((entry) => ({
+      name: typeof entry.name === "string" ? entry.name : "",
+      image_url: entry.image_url as string,
+    }));
 }
 
 export type SectionWithItems = Section & {

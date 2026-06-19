@@ -11,7 +11,7 @@ export type SaveItemInput = {
   finish: string | null;
   code: string | null;
   image_url: string | null;
-  also_available_in: { image_url: string }[];
+  also_available_in: { name: string; image_url: string }[];
 };
 
 export type SaveSectionInput = {

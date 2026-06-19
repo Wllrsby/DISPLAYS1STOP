@@ -174,20 +174,30 @@ export default async function DisplayPage({ params }: Props) {
                               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                                 Also available in
                               </p>
-                              <div className="mt-2 flex flex-wrap gap-2">
+                              <div className="mt-2 flex flex-wrap gap-3">
                                 {parseColorSwatches(item.also_available_in).map(
                                   (swatch, swatchIndex) => (
                                     <div
                                       key={swatchIndex}
-                                      className="relative h-10 w-10 overflow-hidden rounded-md border border-slate-200"
+                                      className="flex flex-col items-center gap-1"
                                     >
-                                      <Image
-                                        src={swatch.image_url}
-                                        alt={`Colour option ${swatchIndex + 1}`}
-                                        fill
-                                        className="object-cover"
-                                        sizes="40px"
-                                      />
+                                      <div className="relative h-10 w-10 overflow-hidden rounded-md border border-slate-200">
+                                        <Image
+                                          src={swatch.image_url}
+                                          alt={
+                                            swatch.name ||
+                                            `Colour option ${swatchIndex + 1}`
+                                          }
+                                          fill
+                                          className="object-cover"
+                                          sizes="40px"
+                                        />
+                                      </div>
+                                      {swatch.name && (
+                                        <span className="max-w-[72px] truncate text-center text-xs text-slate-600">
+                                          {swatch.name}
+                                        </span>
+                                      )}
                                     </div>
                                   )
                                 )}

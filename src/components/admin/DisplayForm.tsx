@@ -50,6 +50,7 @@ function mapDisplayToSections(display?: DisplayWithSections): SectionFormData[] 
             imageFile: null,
             also_available_in: parseColorSwatches(item.also_available_in).map(
               (swatch) => ({
+                name: swatch.name,
                 image_url: swatch.image_url,
                 imageFile: null,
               })
@@ -170,9 +171,15 @@ export function DisplayForm({ display }: DisplayFormProps) {
                       if ("error" in upload) {
                         throw new Error(upload.error);
                       }
-                      return { image_url: upload.url };
+                      return {
+                        name: swatch.name.trim(),
+                        image_url: upload.url,
+                      };
                     }
-                    return { image_url: swatch.image_url! };
+                    return {
+                      name: swatch.name.trim(),
+                      image_url: swatch.image_url!,
+                    };
                   })
               );
 
