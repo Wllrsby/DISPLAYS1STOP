@@ -85,7 +85,7 @@ export function ItemRow({
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
         <div>
           <label className={labelClass}>Finish</label>
           <input
@@ -103,6 +103,16 @@ export function ItemRow({
             value={item.code ?? ""}
             onChange={(e) => onChange(index, { code: e.target.value })}
             placeholder="Product code"
+            className={fieldClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Size</label>
+          <input
+            type="text"
+            value={item.size ?? ""}
+            onChange={(e) => onChange(index, { size: e.target.value })}
+            placeholder="e.g. 800mm"
             className={fieldClass}
           />
         </div>

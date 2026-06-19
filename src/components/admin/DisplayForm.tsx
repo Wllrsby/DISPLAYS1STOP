@@ -18,6 +18,7 @@ function emptyItem(): ItemFormData {
     description: "",
     finish: "",
     code: "",
+    size: "",
     quantity: 1,
     rrp: "",
     image_url: null,
@@ -44,6 +45,7 @@ function mapDisplayToSections(display?: DisplayWithSections): SectionFormData[] 
             description: item.description,
             finish: item.finish ?? "",
             code: item.code ?? "",
+            size: item.size ?? "",
             quantity: item.quantity,
             rrp: item.rrp.toString(),
             image_url: item.image_url,
@@ -190,6 +192,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
                 rrp: parseFloat(item.rrp) || 0,
                 finish: item.finish || null,
                 code: item.code || null,
+                size: item.size || null,
                 image_url: imageUrl,
                 also_available_in: alsoAvailableIn,
               };

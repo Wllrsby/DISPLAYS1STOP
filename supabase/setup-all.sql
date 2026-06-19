@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS items (
   image_url TEXT,
   finish TEXT,
   code TEXT,
+  size TEXT,
   also_available_in JSONB NOT NULL DEFAULT '[]'::jsonb
 );
 

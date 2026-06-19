@@ -160,30 +160,44 @@ export default async function DisplayPage({ params }: Props) {
                               </p>
                             </div>
 
-                            {(item.finish || item.code || item.quantity > 0) && (
+                            {(item.finish ||
+                              item.code ||
+                              item.size ||
+                              item.quantity > 0) && (
                               <p className="text-xs leading-relaxed text-slate-600 sm:text-sm">
-                                {item.finish && (
-                                  <span>
-                                    <span className="text-slate-400">Finish</span>{" "}
-                                    {item.finish}
-                                  </span>
-                                )}
-                                {item.finish && item.code && (
-                                  <span className="text-slate-300"> · </span>
-                                )}
-                                {item.code && (
-                                  <span>
-                                    <span className="text-slate-400">Code</span>{" "}
-                                    {item.code}
-                                  </span>
-                                )}
-                                {(item.finish || item.code) && (
-                                  <span className="text-slate-300"> · </span>
-                                )}
-                                <span>
-                                  <span className="text-slate-400">Qty</span>{" "}
-                                  {item.quantity}
-                                </span>
+                                {[
+                                  item.finish && (
+                                    <span key="finish">
+                                      <span className="text-slate-400">Finish</span>{" "}
+                                      {item.finish}
+                                    </span>
+                                  ),
+                                  item.code && (
+                                    <span key="code">
+                                      <span className="text-slate-400">Code</span>{" "}
+                                      {item.code}
+                                    </span>
+                                  ),
+                                  item.size && (
+                                    <span key="size">
+                                      <span className="text-slate-400">Size</span>{" "}
+                                      {item.size}
+                                    </span>
+                                  ),
+                                  <span key="qty">
+                                    <span className="text-slate-400">Qty</span>{" "}
+                                    {item.quantity}
+                                  </span>,
+                                ]
+                                  .filter(Boolean)
+                                  .map((part, partIndex, parts) => (
+                                    <span key={partIndex}>
+                                      {partIndex > 0 && (
+                                        <span className="text-slate-300"> · </span>
+                                      )}
+                                      {part}
+                                    </span>
+                                  ))}
                               </p>
                             )}
 

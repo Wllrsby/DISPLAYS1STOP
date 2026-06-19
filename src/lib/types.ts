@@ -32,6 +32,7 @@ export type Item = {
   image_url: string | null;
   finish: string | null;
   code: string | null;
+  size: string | null;
   also_available_in: ColorSwatch[];
 };
 
@@ -66,6 +67,7 @@ export type ItemFormData = {
   rrp: string;
   finish: string;
   code: string;
+  size: string;
   image_url: string | null;
   imageFile?: File | null;
   also_available_in: ColorSwatchFormData[];

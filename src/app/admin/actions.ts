@@ -10,6 +10,7 @@ export type SaveItemInput = {
   rrp: number;
   finish: string | null;
   code: string | null;
+  size: string | null;
   image_url: string | null;
   also_available_in: { name: string; image_url: string }[];
 };
@@ -133,6 +134,7 @@ export async function saveDisplay(
         rrp: item.rrp,
         finish: item.finish?.trim() || null,
         code: item.code?.trim() || null,
+        size: item.size?.trim() || null,
         image_url: item.image_url,
         also_available_in: item.also_available_in ?? [],
       };
