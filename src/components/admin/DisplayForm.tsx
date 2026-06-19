@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { saveDisplay, uploadItemImage } from "@/app/admin/actions";
 import { DisplayIdCard } from "@/components/admin/DisplayIdCard";
 import { SectionBlock } from "@/components/admin/SectionBlock";
@@ -42,12 +42,12 @@ function mapDisplayToSections(display?: DisplayWithSections): SectionFormData[] 
       items: section.items.length
         ? section.items.map((item) => ({
             id: item.id,
-            description: item.description,
+            description: item.description ?? "",
             finish: item.finish ?? "",
             code: item.code ?? "",
             size: item.size ?? "",
-            quantity: item.quantity,
-            rrp: item.rrp.toString(),
+            quantity: Number(item.quantity) || 0,
+            rrp: item.rrp != null ? String(item.rrp) : "",
             image_url: item.image_url,
             imageFile: null,
             also_available_in: parseColorSwatches(item.also_available_in).map(
@@ -79,13 +79,6 @@ export function DisplayForm({ display }: DisplayFormProps) {
   const [savedId, setSavedId] = useState<string | null>(display?.id ?? null);
 
   const qrDisplayId = display?.id ?? savedId;
-
-  useEffect(() => {
-    if (!display) return;
-    setName(display.name);
-    setSections(mapDisplayToSections(display));
-    setSavedId(display.id);
-  }, [display]);
 
   function updateSection(
     sectionIndex: number,
@@ -195,7 +188,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
               return {
                 id: item.id,
                 description: item.description,
-                quantity: item.quantity,
+                quantity: Number(item.quantity) || 0,
                 rrp: parseFloat(item.rrp) || 0,
                 finish: item.finish || null,
                 code: item.code || null,
@@ -226,11 +219,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
 
       setSavedId(result.id!);
 
-      if (!display?.id) {
-        router.replace(`/admin/${result.id}/edit`);
-      } else {
-        router.refresh();
-      }
+      router.replace(`/admin/${result.id}/edit`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save display");
     } finally {

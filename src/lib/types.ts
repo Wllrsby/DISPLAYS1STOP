@@ -37,8 +37,16 @@ export type Item = {
 };
 
 export function parseColorSwatches(value: unknown): ColorSwatch[] {
-  if (!Array.isArray(value)) return [];
-  return value
+  let parsed = value;
+  if (typeof parsed === "string") {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+  return parsed
     .filter(
       (entry): entry is Record<string, unknown> =>
         typeof entry === "object" &&

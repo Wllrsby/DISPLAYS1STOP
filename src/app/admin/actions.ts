@@ -26,7 +26,8 @@ export async function saveDisplay(
   name: string,
   sections: SaveSectionInput[]
 ) {
-  const supabase = createServerClient();
+  try {
+    const supabase = createServerClient();
 
   if (!name.trim()) {
     return { error: "Display name is required" };
@@ -156,6 +157,11 @@ export async function saveDisplay(
   revalidatePath(`/display/${id}`);
 
   return { id };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Failed to save display",
+    };
+  }
 }
 
 export async function deleteDisplay(displayId: string) {
@@ -171,7 +177,8 @@ export async function deleteDisplay(displayId: string) {
 export async function uploadItemImage(
   formData: FormData
 ): Promise<{ url: string } | { error: string }> {
-  const file = formData.get("file");
+  try {
+    const file = formData.get("file");
 
   if (!file || !(file instanceof File)) {
     return { error: "No image file provided" };
@@ -202,4 +209,9 @@ export async function uploadItemImage(
 
   const { data } = supabase.storage.from("item-images").getPublicUrl(fileName);
   return { url: data.publicUrl };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Failed to upload image",
+    };
+  }
 }

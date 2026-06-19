@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DisplayForm } from "@/components/admin/DisplayForm";
+import { ConfigError } from "@/components/ConfigError";
 import { createServerClient } from "@/lib/supabase/server";
 import type { DisplayWithSections, Item, Section } from "@/lib/types";
 
@@ -26,26 +27,36 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function EditDisplayPage({ params }: Props) {
   const { id } = await params;
-  const supabase = createServerClient();
 
-  const { data: display } = await supabase
-    .from("displays")
-    .select("*")
-    .eq("id", id)
-    .single();
+  try {
+    const supabase = createServerClient();
 
-  if (!display) notFound();
+    const { data: display, error: displayError } = await supabase
+      .from("displays")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-  const { data: sections } = await supabase
-    .from("sections")
-    .select("*")
-    .eq("display_id", id)
-    .order("sort_order");
+    if (displayError || !display) notFound();
 
-  const { data: items } = await supabase
-    .from("items")
-    .select("*")
-    .eq("display_id", id);
+    const { data: sections, error: sectionsError } = await supabase
+      .from("sections")
+      .select("*")
+      .eq("display_id", id)
+      .order("sort_order");
+
+    if (sectionsError) {
+      return <ConfigError message={sectionsError.message} />;
+    }
+
+    const { data: items, error: itemsError } = await supabase
+      .from("items")
+      .select("*")
+      .eq("display_id", id);
+
+    if (itemsError) {
+      return <ConfigError message={itemsError.message} />;
+    }
 
   const itemsBySection = new Map<string, Item[]>();
   for (const item of (items as Item[]) ?? []) {
@@ -113,4 +124,9 @@ export default async function EditDisplayPage({ params }: Props) {
       </main>
     </div>
   );
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to load display";
+    return <ConfigError message={message} />;
+  }
 }
