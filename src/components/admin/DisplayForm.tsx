@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { saveDisplay, uploadItemImage } from "@/app/admin/actions";
 import { DisplayIdCard } from "@/components/admin/DisplayIdCard";
 import { SectionBlock } from "@/components/admin/SectionBlock";
@@ -79,6 +79,13 @@ export function DisplayForm({ display }: DisplayFormProps) {
   const [savedId, setSavedId] = useState<string | null>(display?.id ?? null);
 
   const qrDisplayId = display?.id ?? savedId;
+
+  useEffect(() => {
+    if (!display) return;
+    setName(display.name);
+    setSections(mapDisplayToSections(display));
+    setSavedId(display.id);
+  }, [display]);
 
   function updateSection(
     sectionIndex: number,
@@ -221,6 +228,8 @@ export function DisplayForm({ display }: DisplayFormProps) {
 
       if (!display?.id) {
         router.replace(`/admin/${result.id}/edit`);
+      } else {
+        router.refresh();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save display");

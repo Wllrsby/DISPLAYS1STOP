@@ -12,21 +12,28 @@ type Props = {
 };
 
 function formatPrice(rrp: number) {
+  const value = Number(rrp);
+  if (!Number.isFinite(value)) return "—";
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: "GBP",
-  }).format(rrp);
+  }).format(value);
 }
 
 function formatQuantity(quantity: number) {
-  return Number(quantity).toLocaleString("en-GB", {
+  const value = Number(quantity);
+  if (!Number.isFinite(value)) return "—";
+  return value.toLocaleString("en-GB", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
 }
 
 function itemLineTotal(item: Item) {
-  return Number(item.quantity) * Number(item.rrp);
+  const qty = Number(item.quantity);
+  const rrp = Number(item.rrp);
+  if (!Number.isFinite(qty) || !Number.isFinite(rrp)) return 0;
+  return qty * rrp;
 }
 
 function sectionTotal(items: Item[]) {
