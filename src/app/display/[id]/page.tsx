@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { SocialPrompt } from "@/components/SocialPrompt";
 import { createServerClient } from "@/lib/supabase/server";
 import type { Item, Section } from "@/lib/types";
 import { parseColorSwatches } from "@/lib/types";
@@ -228,6 +229,17 @@ export default async function DisplayPage({ params }: Props) {
           </div>
         )}
       </main>
+
+      <footer className="border-t border-slate-100 px-4 py-6 text-center sm:px-6">
+        <a
+          href="/socials"
+          className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
+        >
+          Follow us on social media
+        </a>
+      </footer>
+
+      <SocialPrompt />
     </div>
   );
 }
