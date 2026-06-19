@@ -1,7 +1,6 @@
 "use client";
 
 import { IBM_Plex_Sans } from "next/font/google";
-import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import { useRef, useState } from "react";
 import { DISPLAY_ID_CARD_STYLES } from "@/components/admin/displayIdCardStyles";
@@ -22,6 +21,14 @@ export function getDisplayUrl(displayId: string) {
       ? process.env.NEXT_PUBLIC_APP_URL || window.location.origin
       : process.env.NEXT_PUBLIC_APP_URL || "";
   return `${appUrl}/display/${displayId}`;
+}
+
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function QrScanIcon() {
@@ -54,9 +61,11 @@ function QrScanIcon() {
   );
 }
 
+const SCAN_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5fb949" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"></rect><rect width="5" height="5" x="16" y="3" rx="1"></rect><rect width="5" height="5" x="3" y="16" rx="1"></rect><path d="M21 16h-3a2 2 0 0 0-2 2v3"></path><path d="M21 21v.01"></path><path d="M12 7v3a2 2 0 0 1-2 2H7"></path><path d="M3 12h.01"></path><path d="M12 3h.01"></path><path d="M12 16v.01"></path><path d="M16 12h1"></path><path d="M21 12v.01"></path><path d="M12 21v-1"></path></svg>`;
+
 export function DisplayIdCard({ displayId, displayName }: DisplayIdCardProps) {
   const displayUrl = getDisplayUrl(displayId);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const qrRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
   async function copyLink() {
@@ -66,38 +75,57 @@ export function DisplayIdCard({ displayId, displayName }: DisplayIdCardProps) {
   }
 
   function printCard() {
-    const card = cardRef.current;
-    if (!card) return;
+    const qrSvg =
+      qrRef.current?.querySelector("svg")?.outerHTML ??
+      `<div style="font-size:12px;color:#666">QR unavailable</div>`;
 
-    const printWindow = window.open("", "_blank", "noopener,noreferrer");
-    if (!printWindow) return;
+    const logoUrl = `${window.location.origin}/1stop-logo.png`;
+    const safeName = escapeHtml(displayName);
 
-    const clone = card.cloneNode(true) as HTMLElement;
-    const img = clone.querySelector("img");
-    if (img) {
-      img.src = `${window.location.origin}/1stop-logo.png`;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Please allow pop-ups to print the display card.");
+      return;
     }
 
+    printWindow.document.open();
     printWindow.document.write(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>${displayName} – Display Card</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <title>${safeName} – Display Card</title>
   <style>${DISPLAY_ID_CARD_STYLES}</style>
 </head>
 <body>
-  ${clone.outerHTML}
+  <div class="display-id-card">
+    <div class="display-id-card__brand">
+      <img src="${logoUrl}" alt="1 Stop Plumbing and Green Energy Centre" />
+    </div>
+    <div class="display-id-card__message">
+      <div class="display-id-card__title">${safeName}</div>
+      <p class="display-id-card__subtitle">See full specs, pricing &amp; finish options for the suite in front of you.</p>
+    </div>
+    <div class="display-id-card__qr">
+      <div class="display-id-card__qr-box">${qrSvg}</div>
+      <div class="display-id-card__scan">${SCAN_ICON_SVG}<span>Scan Me!</span></div>
+    </div>
+  </div>
+  <script>
+    function runPrint() {
+      window.focus();
+      window.print();
+    }
+    const img = document.querySelector("img");
+    if (img && !img.complete) {
+      img.addEventListener("load", function () { setTimeout(runPrint, 100); });
+      img.addEventListener("error", function () { setTimeout(runPrint, 100); });
+    } else {
+      setTimeout(runPrint, 100);
+    }
+  </script>
 </body>
 </html>`);
-
     printWindow.document.close();
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    };
   }
 
   return (
@@ -106,15 +134,12 @@ export function DisplayIdCard({ displayId, displayName }: DisplayIdCardProps) {
         Print this card and place it on the display. The link never changes.
       </p>
 
-      <div ref={cardRef} className="display-id-card">
+      <div className="display-id-card">
         <div className="display-id-card__brand">
-          <Image
+          <img
             src="/1stop-logo.png"
             alt="1 Stop Plumbing and Green Energy Centre"
-            width={206}
-            height={356}
             className="h-full w-full object-contain"
-            priority
           />
         </div>
 
@@ -127,7 +152,7 @@ export function DisplayIdCard({ displayId, displayName }: DisplayIdCardProps) {
         </div>
 
         <div className="display-id-card__qr">
-          <div className="display-id-card__qr-box">
+          <div ref={qrRef} className="display-id-card__qr-box">
             <QRCodeSVG value={displayUrl} size={160} level="H" includeMargin />
           </div>
           <div className="display-id-card__scan">
