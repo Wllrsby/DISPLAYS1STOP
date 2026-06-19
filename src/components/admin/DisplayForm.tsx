@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { saveDisplay, uploadItemImage } from "@/app/admin/actions";
-import { QRCodeDisplay } from "@/components/admin/QRCodeDisplay";
+import { DisplayIdCard } from "@/components/admin/DisplayIdCard";
 import { SectionBlock } from "@/components/admin/SectionBlock";
 import type {
   DisplayWithSections,
@@ -194,7 +194,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
 
   return (
     <div className="space-y-8">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 print:hidden">
         <div>
           <label
             htmlFor="display-name"
@@ -273,7 +273,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
 
       {qrDisplayId && (
         <div className="border-t border-slate-200 pt-8">
-          <QRCodeDisplay displayId={qrDisplayId} displayName={name} />
+          <DisplayIdCard displayId={qrDisplayId} displayName={name} />
         </div>
       )}
     </div>
