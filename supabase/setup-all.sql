@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS items (
   rrp NUMERIC(10, 2) NOT NULL CHECK (rrp >= 0),
   image_url TEXT,
   finish TEXT,
-  code TEXT
+  code TEXT,
+  also_available_in JSONB NOT NULL DEFAULT '[]'::jsonb
 );
 
 CREATE INDEX IF NOT EXISTS items_display_id_idx ON items(display_id);

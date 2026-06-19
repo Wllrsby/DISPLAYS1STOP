@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useRef } from "react";
-import type { ItemFormData } from "@/lib/types";
+import { ColorSwatchesField } from "@/components/admin/ColorSwatchesField";
+import type { ColorSwatchFormData, ItemFormData } from "@/lib/types";
 
 type ItemRowProps = {
   item: ItemFormData;
@@ -170,6 +171,13 @@ export function ItemRow({
           )}
         </div>
       </div>
+
+      <ColorSwatchesField
+        swatches={item.also_available_in ?? []}
+        onChange={(also_available_in: ColorSwatchFormData[]) =>
+          onChange(index, { also_available_in })
+        }
+      />
     </div>
   );
 }

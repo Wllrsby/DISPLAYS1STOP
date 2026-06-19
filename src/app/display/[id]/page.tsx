@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import type { Item, Section } from "@/lib/types";
+import { parseColorSwatches } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -166,6 +167,32 @@ export default async function DisplayPage({ params }: Props) {
                                 </div>
                               )}
                             </dl>
+                          )}
+                          {parseColorSwatches(item.also_available_in).length >
+                            0 && (
+                            <div className="mt-3">
+                              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Also available in
+                              </p>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {parseColorSwatches(item.also_available_in).map(
+                                  (swatch, swatchIndex) => (
+                                    <div
+                                      key={swatchIndex}
+                                      className="relative h-10 w-10 overflow-hidden rounded-md border border-slate-200"
+                                    >
+                                      <Image
+                                        src={swatch.image_url}
+                                        alt={`Colour option ${swatchIndex + 1}`}
+                                        fill
+                                        className="object-cover"
+                                        sizes="40px"
+                                      />
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
                           )}
                           <dl className="mt-3 flex items-center justify-between text-sm">
                             <div>

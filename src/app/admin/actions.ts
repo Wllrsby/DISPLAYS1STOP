@@ -11,6 +11,7 @@ export type SaveItemInput = {
   finish: string | null;
   code: string | null;
   image_url: string | null;
+  also_available_in: { image_url: string }[];
 };
 
 export type SaveSectionInput = {
@@ -133,6 +134,7 @@ export async function saveDisplay(
         finish: item.finish?.trim() || null,
         code: item.code?.trim() || null,
         image_url: item.image_url,
+        also_available_in: item.also_available_in ?? [],
       };
 
       if (item.id && existingItemIds.has(item.id)) {

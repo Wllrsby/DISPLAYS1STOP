@@ -11,6 +11,7 @@ import type {
   ItemFormData,
   SectionFormData,
 } from "@/lib/types";
+import { parseColorSwatches } from "@/lib/types";
 
 function emptyItem(): ItemFormData {
   return {
@@ -21,6 +22,7 @@ function emptyItem(): ItemFormData {
     rrp: "",
     image_url: null,
     imageFile: null,
+    also_available_in: [],
   };
 }
 
@@ -46,6 +48,12 @@ function mapDisplayToSections(display?: DisplayWithSections): SectionFormData[] 
             rrp: item.rrp.toString(),
             image_url: item.image_url,
             imageFile: null,
+            also_available_in: parseColorSwatches(item.also_available_in).map(
+              (swatch) => ({
+                image_url: swatch.image_url,
+                imageFile: null,
+              })
+            ),
           }))
         : [emptyItem()],
     }));
@@ -150,6 +158,24 @@ export function DisplayForm({ display }: DisplayFormProps) {
                 }
                 imageUrl = upload.url;
               }
+
+              const alsoAvailableIn = await Promise.all(
+                item.also_available_in
+                  .filter((swatch) => swatch.image_url || swatch.imageFile)
+                  .map(async (swatch) => {
+                    if (swatch.imageFile) {
+                      const formData = new FormData();
+                      formData.append("file", swatch.imageFile);
+                      const upload = await uploadItemImage(formData);
+                      if ("error" in upload) {
+                        throw new Error(upload.error);
+                      }
+                      return { image_url: upload.url };
+                    }
+                    return { image_url: swatch.image_url! };
+                  })
+              );
+
               return {
                 id: item.id,
                 description: item.description,
@@ -158,6 +184,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
                 finish: item.finish || null,
                 code: item.code || null,
                 image_url: imageUrl,
+                also_available_in: alsoAvailableIn,
               };
             })
           );
