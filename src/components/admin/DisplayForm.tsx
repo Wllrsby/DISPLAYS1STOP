@@ -76,6 +76,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(display?.id ?? null);
 
   const qrDisplayId = display?.id ?? savedId;
@@ -145,85 +146,98 @@ export function DisplayForm({ display }: DisplayFormProps) {
     e.preventDefault();
     setSaving(true);
     setError(null);
+    setSuccess(null);
 
-    try {
-      const preparedSections = await Promise.all(
-        sections.map(async (section) => {
-          const preparedItems = await Promise.all(
-            section.items.map(async (item) => {
-              let imageUrl = item.image_url;
-              if (item.imageFile) {
-                const formData = new FormData();
-                formData.append("file", item.imageFile);
-                const upload = await uploadItemImage(formData);
-                if ("error" in upload) {
-                  throw new Error(upload.error);
-                }
-                imageUrl = upload.url;
-              }
+    const preparedSections = [];
 
-              const alsoAvailableIn = await Promise.all(
-                item.also_available_in
-                  .filter((swatch) => swatch.image_url || swatch.imageFile)
-                  .map(async (swatch) => {
-                    if (swatch.imageFile) {
-                      const formData = new FormData();
-                      formData.append("file", swatch.imageFile);
-                      const upload = await uploadItemImage(formData);
-                      if ("error" in upload) {
-                        throw new Error(upload.error);
-                      }
-                      return {
-                        name: swatch.name.trim(),
-                        image_url: upload.url,
-                      };
-                    }
-                    return {
-                      name: swatch.name.trim(),
-                      image_url: swatch.image_url!,
-                    };
-                  })
-              );
+    for (const section of sections) {
+      const preparedItems = [];
 
-              return {
-                id: item.id,
-                description: item.description,
-                quantity: Number(item.quantity) || 0,
-                rrp: parseFloat(item.rrp) || 0,
-                finish: item.finish || null,
-                code: item.code || null,
-                size: item.size || null,
-                image_url: imageUrl,
-                also_available_in: alsoAvailableIn,
-              };
-            })
-          );
-          return {
-            id: section.id,
-            name: section.name,
-            items: preparedItems,
-          };
-        })
-      );
+      for (const item of section.items) {
+        let imageUrl = item.image_url;
 
-      const result = await saveDisplay(
-        display?.id ?? savedId,
-        name,
-        preparedSections
-      );
+        if (item.imageFile) {
+          const formData = new FormData();
+          formData.append("file", item.imageFile);
+          const upload = await uploadItemImage(formData);
+          if ("error" in upload) {
+            setError(upload.error);
+            setSaving(false);
+            return;
+          }
+          imageUrl = upload.url;
+        }
 
-      if (result.error) {
-        setError(result.error);
-        return;
+        const alsoAvailableIn = [];
+
+        for (const swatch of item.also_available_in.filter(
+          (entry) => entry.image_url || entry.imageFile
+        )) {
+          if (swatch.imageFile) {
+            const formData = new FormData();
+            formData.append("file", swatch.imageFile);
+            const upload = await uploadItemImage(formData);
+            if ("error" in upload) {
+              setError(upload.error);
+              setSaving(false);
+              return;
+            }
+            alsoAvailableIn.push({
+              name: swatch.name.trim(),
+              image_url: upload.url,
+            });
+            continue;
+          }
+
+          alsoAvailableIn.push({
+            name: swatch.name.trim(),
+            image_url: swatch.image_url!,
+          });
+        }
+
+        preparedItems.push({
+          id: item.id,
+          description: item.description,
+          quantity: Number(item.quantity) || 0,
+          rrp: parseFloat(item.rrp) || 0,
+          finish: item.finish || null,
+          code: item.code || null,
+          size: item.size || null,
+          image_url: imageUrl,
+          also_available_in: alsoAvailableIn,
+        });
       }
 
-      setSavedId(result.id!);
+      preparedSections.push({
+        id: section.id && section.id !== "legacy" ? section.id : undefined,
+        name: section.name,
+        items: preparedItems,
+      });
+    }
 
+    const result = await saveDisplay(
+      display?.id ?? savedId,
+      name,
+      preparedSections
+    );
+
+    setSaving(false);
+
+    if (result?.error) {
+      setError(result.error);
+      return;
+    }
+
+    if (!result?.id) {
+      setError("Save failed — no display id returned.");
+      return;
+    }
+
+    setSavedId(result.id);
+    setSuccess("Display saved successfully.");
+
+    if (!display?.id) {
       router.replace(`/admin/${result.id}/edit`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save display");
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -286,6 +300,12 @@ export function DisplayForm({ display }: DisplayFormProps) {
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            {success}
           </div>
         )}
 

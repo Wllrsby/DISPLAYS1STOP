@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SocialPrompt } from "@/components/SocialPrompt";
 import { createServerClient } from "@/lib/supabase/server";
@@ -189,13 +188,11 @@ export default async function DisplayPage({ params }: Props) {
                         >
                           <div className="flex h-[min(28vh,180px)] w-full items-center justify-center bg-slate-50 p-1.5 sm:h-[min(50vh,320px)] sm:p-2">
                             {item.image_url ? (
-                              <Image
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
                                 src={item.image_url}
                                 alt={item.description}
-                                width={800}
-                                height={800}
                                 className="max-h-full max-w-full object-contain"
-                                sizes="(max-width: 640px) 100vw, 672px"
                               />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center text-slate-400">
@@ -235,16 +232,15 @@ export default async function DisplayPage({ params }: Props) {
                                       key={swatchIndex}
                                       className="flex items-center gap-1.5 rounded-md border border-slate-100 bg-slate-50 py-0.5 pl-0.5 pr-2"
                                     >
-                                      <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded border border-slate-200 sm:h-8 sm:w-8">
-                                        <Image
+                                      <div className="h-7 w-7 shrink-0 overflow-hidden rounded border border-slate-200 sm:h-8 sm:w-8">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
                                           src={swatch.image_url}
                                           alt={
                                             swatch.name ||
                                             `Colour option ${swatchIndex + 1}`
                                           }
-                                          fill
-                                          className="object-cover"
-                                          sizes="32px"
+                                          className="h-full w-full object-cover"
                                         />
                                       </div>
                                       {swatch.name && (
