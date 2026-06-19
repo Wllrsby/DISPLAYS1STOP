@@ -46,20 +46,20 @@ export function SocialPrompt() {
           open ? "translate-y-0" : "translate-y-full"
         }`}
       >
-        <div className="mx-auto max-w-lg rounded-t-2xl border border-slate-200 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl">
-          <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="mx-auto max-w-lg rounded-t-2xl border border-slate-200 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:px-5 sm:pt-4">
+          <div className="mb-2.5 flex items-start justify-between gap-2 sm:mb-3 sm:gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-emerald-700 sm:text-xs">
                 Stay connected
               </p>
               <h2
                 id="social-prompt-title"
-                className="mt-1 text-lg font-semibold text-slate-900"
+                className="mt-0.5 text-base font-semibold text-slate-900 sm:mt-1 sm:text-lg"
               >
                 Check out our socials
               </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Follow us for bathroom inspiration, offers, and showroom updates.
+              <p className="mt-0.5 text-xs text-slate-600 sm:mt-1 sm:text-sm">
+                Inspiration, offers &amp; showroom updates.
               </p>
             </div>
             <button
@@ -83,24 +83,24 @@ export function SocialPrompt() {
             </button>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex gap-2">
             <Link
               href="/socials"
               onClick={dismiss}
-              className="flex-1 rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-slate-800"
+              className="flex-1 rounded-lg bg-slate-900 px-3 py-2.5 text-center text-sm font-medium text-white transition hover:bg-slate-800 sm:rounded-xl sm:px-4 sm:py-3"
             >
-              View our socials
+              View socials
             </Link>
             <button
               type="button"
               onClick={dismiss}
-              className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:rounded-xl sm:px-4 sm:py-3"
             >
-              Maybe later
+              Later
             </button>
           </div>
 
-          <p className="mt-3 text-center text-xs text-slate-400">
+          <p className="mt-2 hidden text-center text-xs text-slate-400 sm:mt-3 sm:block">
             {SOCIAL_CONFIG.businessName}
           </p>
         </div>

@@ -85,104 +85,120 @@ export default async function DisplayPage({ params }: Props) {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-900 sm:px-6">
-        All prices are RRP and subject to discount. Please ask a member of
-        staff.
+      <div className="border-b border-amber-200 bg-amber-50 px-3 py-2 text-center text-[11px] leading-snug text-amber-900 sm:px-6 sm:py-2.5 sm:text-sm">
+        RRP prices — discounts available. Please ask staff.
       </div>
 
-      <header className="border-b border-slate-100 px-4 py-6 sm:px-6">
-        <h1 className="text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+      <header className="border-b border-slate-100 px-3 py-3 sm:px-6 sm:py-5">
+        <h1 className="text-center text-lg font-semibold tracking-tight text-slate-900 sm:text-2xl">
           {display.name}
         </h1>
-        <p className="mt-1 text-center text-sm text-slate-500">
+        <p className="mt-0.5 hidden text-center text-sm text-slate-500 sm:block">
           Display specification
         </p>
       </header>
 
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-3 py-3 sm:px-6 sm:py-6">
         {!hasContent ? (
-          <p className="text-center text-slate-500">No items in this display.</p>
+          <p className="text-center text-sm text-slate-500">
+            No items in this display.
+          </p>
         ) : (
-          <div className="space-y-10">
+          <div className="space-y-5 sm:space-y-10">
             {displaySections.map((section) =>
               section.items.length > 0 ? (
                 <section key={section.id}>
-                  <h2 className="mb-4 border-b border-slate-200 pb-2 text-lg font-semibold text-slate-900">
+                  <h2 className="mb-2 border-b border-slate-200 pb-1.5 text-base font-semibold text-slate-900 sm:mb-4 sm:pb-2 sm:text-lg">
                     {section.name}
                   </h2>
-                  <ul className="space-y-6">
-                    {section.items.map((item) => (
-                      <li
-                        key={item.id}
-                        className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
-                      >
-                        <div className="flex h-[min(50vh,320px)] w-full items-center justify-center bg-slate-50 p-2">
-                          {item.image_url ? (
-                            <Image
-                              src={item.image_url}
-                              alt={item.description}
-                              width={800}
-                              height={800}
-                              className="max-h-full max-w-full object-contain"
-                              sizes="100vw"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-slate-400">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-12 w-12"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-4">
-                          <h3 className="font-medium text-slate-900">
-                            {item.description}
-                          </h3>
-                          {(item.finish || item.code) && (
-                            <dl className="mt-2 space-y-1 text-sm">
-                              {item.finish && (
-                                <div className="flex gap-2">
-                                  <dt className="text-slate-500">Finish</dt>
-                                  <dd className="font-medium text-slate-900">
-                                    {item.finish}
-                                  </dd>
-                                </div>
-                              )}
-                              {item.code && (
-                                <div className="flex gap-2">
-                                  <dt className="text-slate-500">Code</dt>
-                                  <dd className="font-medium text-slate-900">
-                                    {item.code}
-                                  </dd>
-                                </div>
-                              )}
-                            </dl>
-                          )}
-                          {parseColorSwatches(item.also_available_in).length >
-                            0 && (
-                            <div className="mt-3">
-                              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                                Also available in
+                  <ul className="space-y-3 sm:space-y-6">
+                    {section.items.map((item) => {
+                      const swatches = parseColorSwatches(item.also_available_in);
+
+                      return (
+                        <li
+                          key={item.id}
+                          className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm sm:rounded-xl"
+                        >
+                          <div className="flex h-[min(28vh,180px)] w-full items-center justify-center bg-slate-50 p-1.5 sm:h-[min(50vh,320px)] sm:p-2">
+                            {item.image_url ? (
+                              <Image
+                                src={item.image_url}
+                                alt={item.description}
+                                width={800}
+                                height={800}
+                                className="max-h-full max-w-full object-contain"
+                                sizes="(max-width: 640px) 100vw, 672px"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-slate-400">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-8 w-8 sm:h-12 sm:w-12"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="space-y-2 p-3 sm:space-y-3 sm:p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <h3 className="text-sm font-medium leading-snug text-slate-900 sm:text-base">
+                                {item.description}
+                              </h3>
+                              <p className="shrink-0 text-sm font-semibold text-slate-900 sm:text-lg">
+                                {formatPrice(Number(item.rrp))}
                               </p>
-                              <div className="mt-2 flex flex-wrap gap-3">
-                                {parseColorSwatches(item.also_available_in).map(
-                                  (swatch, swatchIndex) => (
+                            </div>
+
+                            {(item.finish || item.code || item.quantity > 0) && (
+                              <p className="text-xs leading-relaxed text-slate-600 sm:text-sm">
+                                {item.finish && (
+                                  <span>
+                                    <span className="text-slate-400">Finish</span>{" "}
+                                    {item.finish}
+                                  </span>
+                                )}
+                                {item.finish && item.code && (
+                                  <span className="text-slate-300"> · </span>
+                                )}
+                                {item.code && (
+                                  <span>
+                                    <span className="text-slate-400">Code</span>{" "}
+                                    {item.code}
+                                  </span>
+                                )}
+                                {(item.finish || item.code) && (
+                                  <span className="text-slate-300"> · </span>
+                                )}
+                                <span>
+                                  <span className="text-slate-400">Qty</span>{" "}
+                                  {item.quantity}
+                                </span>
+                              </p>
+                            )}
+
+                            {swatches.length > 0 && (
+                              <div>
+                                <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500 sm:text-xs">
+                                  Also available in
+                                </p>
+                                <div className="mt-1.5 flex flex-wrap gap-2">
+                                  {swatches.map((swatch, swatchIndex) => (
                                     <div
                                       key={swatchIndex}
-                                      className="flex flex-col items-center gap-1"
+                                      className="flex items-center gap-1.5 rounded-md border border-slate-100 bg-slate-50 py-0.5 pl-0.5 pr-2"
                                     >
-                                      <div className="relative h-10 w-10 overflow-hidden rounded-md border border-slate-200">
+                                      <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded border border-slate-200 sm:h-8 sm:w-8">
                                         <Image
                                           src={swatch.image_url}
                                           alt={
@@ -191,37 +207,23 @@ export default async function DisplayPage({ params }: Props) {
                                           }
                                           fill
                                           className="object-cover"
-                                          sizes="40px"
+                                          sizes="32px"
                                         />
                                       </div>
                                       {swatch.name && (
-                                        <span className="max-w-[72px] truncate text-center text-xs text-slate-600">
+                                        <span className="max-w-[88px] truncate text-[11px] text-slate-600 sm:max-w-none sm:text-xs">
                                           {swatch.name}
                                         </span>
                                       )}
                                     </div>
-                                  )
-                                )}
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                          <dl className="mt-3 flex items-center justify-between text-sm">
-                            <div>
-                              <dt className="text-slate-500">Qty</dt>
-                              <dd className="font-medium text-slate-900">
-                                {item.quantity}
-                              </dd>
-                            </div>
-                            <div className="text-right">
-                              <dt className="text-slate-500">RRP</dt>
-                              <dd className="text-lg font-semibold text-slate-900">
-                                {formatPrice(Number(item.rrp))}
-                              </dd>
-                            </div>
-                          </dl>
-                        </div>
-                      </li>
-                    ))}
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </section>
               ) : null
@@ -230,10 +232,10 @@ export default async function DisplayPage({ params }: Props) {
         )}
       </main>
 
-      <footer className="border-t border-slate-100 px-4 py-6 text-center sm:px-6">
+      <footer className="border-t border-slate-100 px-3 py-3 text-center sm:px-6 sm:py-5">
         <a
           href="/socials"
-          className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
+          className="text-xs font-medium text-slate-500 transition hover:text-slate-900 sm:text-sm"
         >
           Follow us on social media
         </a>
