@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   display_id UUID NOT NULL REFERENCES displays(id) ON DELETE CASCADE,
   description TEXT NOT NULL,
-  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity >= 0),
+  quantity NUMERIC(10, 2) NOT NULL DEFAULT 1 CHECK (quantity >= 0),
   rrp NUMERIC(10, 2) NOT NULL CHECK (rrp >= 0),
   image_url TEXT,
   finish TEXT,

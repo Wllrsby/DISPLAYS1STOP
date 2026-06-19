@@ -121,9 +121,12 @@ export function ItemRow({
           <input
             type="number"
             min={0}
+            step="0.01"
             value={item.quantity}
             onChange={(e) =>
-              onChange(index, { quantity: parseInt(e.target.value) || 0 })
+              onChange(index, {
+                quantity: parseFloat(e.target.value) || 0,
+              })
             }
             className={fieldClass}
           />

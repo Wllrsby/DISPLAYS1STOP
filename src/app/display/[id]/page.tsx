@@ -18,6 +18,13 @@ function formatPrice(rrp: number) {
   }).format(rrp);
 }
 
+function formatQuantity(quantity: number) {
+  return Number(quantity).toLocaleString("en-GB", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
+
 function itemLineTotal(item: Item) {
   return Number(item.quantity) * Number(item.rrp);
 }
@@ -52,7 +59,9 @@ function ItemDetails({ item }: { item: Item }) {
       )}
       <div className="flex gap-2">
         <dt className="w-12 shrink-0 text-slate-400">Qty</dt>
-        <dd className="font-medium text-slate-900">{item.quantity}</dd>
+        <dd className="font-medium text-slate-900">
+          {formatQuantity(item.quantity)}
+        </dd>
       </div>
       <div className="flex gap-2">
         <dt className="w-12 shrink-0 text-slate-400">RRP</dt>
@@ -61,7 +70,8 @@ function ItemDetails({ item }: { item: Item }) {
       <div className="flex gap-2 border-t border-slate-100 pt-1.5">
         <dt className="w-12 shrink-0 text-slate-400">Total</dt>
         <dd className="font-semibold text-slate-900">
-          {item.quantity} × {formatPrice(rrp)} = {formatPrice(lineTotal)}
+          {formatQuantity(item.quantity)} × {formatPrice(rrp)} ={" "}
+          {formatPrice(lineTotal)}
         </dd>
       </div>
     </dl>
