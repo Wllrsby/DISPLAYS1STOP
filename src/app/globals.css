@@ -114,38 +114,3 @@ body {
   font-weight: 800;
   letter-spacing: 0.02em;
 }
-
-@media print {
-  body {
-    background: white;
-  }
-
-  header,
-  nav {
-    display: none !important;
-  }
-
-  .display-id-card-wrap {
-    padding: 0;
-    margin: 0 auto;
-  }
-
-  .display-id-card {
-    width: 800px;
-    height: 400px;
-    aspect-ratio: auto;
-    page-break-inside: avoid;
-  }
-
-  .display-id-card__title {
-    font-size: 27px;
-  }
-
-  .display-id-card__subtitle {
-    font-size: 16px;
-  }
-
-  .display-id-card__scan span {
-    font-size: 22px;
-  }
-}

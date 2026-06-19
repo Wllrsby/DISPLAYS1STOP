@@ -3,7 +3,8 @@
 import { IBM_Plex_Sans } from "next/font/google";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { DISPLAY_ID_CARD_STYLES } from "@/components/admin/displayIdCardStyles";
 
 const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -55,6 +56,7 @@ function QrScanIcon() {
 
 export function DisplayIdCard({ displayId, displayName }: DisplayIdCardProps) {
   const displayUrl = getDisplayUrl(displayId);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
   async function copyLink() {
@@ -63,13 +65,48 @@ export function DisplayIdCard({ displayId, displayName }: DisplayIdCardProps) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  function printCard() {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const printWindow = window.open("", "_blank", "noopener,noreferrer");
+    if (!printWindow) return;
+
+    const clone = card.cloneNode(true) as HTMLElement;
+    const img = clone.querySelector("img");
+    if (img) {
+      img.src = `${window.location.origin}/1stop-logo.png`;
+    }
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>${displayName} – Display Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>${DISPLAY_ID_CARD_STYLES}</style>
+</head>
+<body>
+  ${clone.outerHTML}
+</body>
+</html>`);
+
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
+  }
+
   return (
     <div className={`display-id-card-wrap ${ibmPlexSans.className}`}>
-      <p className="mb-4 text-center text-sm text-slate-500 print:hidden">
+      <p className="mb-4 text-center text-sm text-slate-500">
         Print this card and place it on the display. The link never changes.
       </p>
 
-      <div className="display-id-card">
+      <div ref={cardRef} className="display-id-card">
         <div className="display-id-card__brand">
           <Image
             src="/1stop-logo.png"
@@ -100,7 +137,7 @@ export function DisplayIdCard({ displayId, displayName }: DisplayIdCardProps) {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-3 print:hidden">
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <p className="w-full break-all text-center text-sm text-slate-600">
           {displayUrl}
         </p>
@@ -113,7 +150,7 @@ export function DisplayIdCard({ displayId, displayName }: DisplayIdCardProps) {
         </button>
         <button
           type="button"
-          onClick={() => window.print()}
+          onClick={printCard}
           className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
         >
           Print card

@@ -272,7 +272,7 @@ export function DisplayForm({ display }: DisplayFormProps) {
       </form>
 
       {qrDisplayId && (
-        <div className="border-t border-slate-200 pt-8">
+        <div className="border-t border-slate-200 pt-8 print:hidden">
           <DisplayIdCard displayId={qrDisplayId} displayName={name} />
         </div>
       )}
